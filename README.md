@@ -1,0 +1,2 @@
+# CryptoJS_file_hash_chunks
+前端使用CryptoJS对文件分块加载并计算HASH
