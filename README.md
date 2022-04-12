@@ -10,7 +10,7 @@ const fileMD5 = async (file) => {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
       const slice = file.slice(start, start + size);
-      // @ts-ignore
+
       fileReader.onload = (e) => resolve(new Uint8Array(e.target.result));
       fileReader.onerror = reject;
       fileReader.readAsArrayBuffer(slice);
@@ -41,7 +41,7 @@ const fileSHA1 = async (file) => {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
       const slice = file.slice(start, start + size);
-      // @ts-ignore
+
       fileReader.onload = (e) => resolve(new Uint8Array(e.target.result));
       fileReader.onerror = reject;
       fileReader.readAsArrayBuffer(slice);
@@ -72,7 +72,7 @@ const fileSHA256 = async (file) => {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
       const slice = file.slice(start, start + size);
-      // @ts-ignore
+
       fileReader.onload = (e) => resolve(new Uint8Array(e.target.result));
       fileReader.onerror = reject;
       fileReader.readAsArrayBuffer(slice);
