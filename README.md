@@ -1,4 +1,4 @@
-# CryptoJS_file_hash_chunks
+## CryptoJS_file_hash_chunks
 前端使用CryptoJS对文件分块加载并计算HASH
 
 ### MD5
@@ -91,5 +91,39 @@ const fileSHA256 = async (file) => {
   }
 
   return SHA256.finalize().toString();
+}
+```
+
+## create_exec_list
+创建可链式调用函数。通过add()添加函数，run()顺次执行所有添加的函数
+```typescript
+interface ExecList {
+  add(func: (() => Promise<any>) | (() => any), callback: FuncCallback): this;
+  run(): Promise<void>;
+}
+interface FuncCallback {
+  (result: any, next: () => void): void;
+}
+function createExecList(): ExecList {
+  const queue: { func: () => Promise<any>; callback: FuncCallback }[] = [];
+
+  return {
+    add(func: (() => Promise<any>) | (() => any), callback: FuncCallback) {
+      queue.push({
+        func: () => (func instanceof Promise ? func : Promise.resolve(func())),
+        callback,
+      });
+      return this;
+    },
+    async run(): Promise<void> {
+      if (queue.length) {
+        const { func, callback } = queue.shift()!;
+        const result = await func();
+        callback(result, () => {
+          this.run();
+        });
+      }
+    },
+  };
 }
 ```
