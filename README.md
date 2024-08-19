@@ -243,7 +243,7 @@ watch(
         &:before {
           transform-origin: 50% 100%;
           animation: oldFlipDown 0.6s ease-in-out both;
-          box-shadow: 0 -2px 60px rgba(255, 255, 255, 0.3);
+          box-shadow: 0 -2px 32px rgba(0, 0, 0, 0.3);
           backface-visibility: hidden;
         }
       }
@@ -279,7 +279,7 @@ watch(
         &:after {
           transform-origin: 50% 0;
           animation: oldFlipUp 0.6s ease-in-out both;
-          box-shadow: 0 2px 6px rgba(255, 255, 255, 0.3);
+          box-shadow: 0 2px 32px rgba(0, 0, 0, 0.3);
           backface-visibility: hidden;
         }
       }
