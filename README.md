@@ -127,3 +127,210 @@ function createExecList(): ExecList {
   };
 }
 ```
+
+## 翻页卡片效果
+```vue
+<template>
+  <div class="flipper-box" :class="[flipType, { go: isFlipping }]">
+    <div class="digital old" :data-number="oldNumber"></div>
+    <div class="digital new" :data-number="newNumber"></div>
+  </div>
+</template>
+
+<script setup lang="ts">
+interface Props {
+  defaultOldNumber?: number
+  defaultNewNumber?: number
+  flipType?: 'up' | 'down'
+}
+const props = withDefaults(defineProps<Props>(), {
+  defaultOldNumber: 0,
+  defaultNewNumber: 0,
+  flipType: 'up',
+})
+
+const isFlipping = ref(false)
+const flipType = ref<'up' | 'down'>(props.flipType)
+const oldNumber = ref(props.defaultOldNumber)
+const newNumber = ref(props.defaultNewNumber)
+const duration = ref(800)
+
+function flip(_oldNumber: number, _newNumber: number, _flipType: Props['flipType'] = 'up') {
+  flipType.value = _flipType
+  oldNumber.value = _oldNumber
+  newNumber.value = _newNumber
+  if (isFlipping.value) {
+    return false
+  }
+  if (_oldNumber === _newNumber) {
+    return false
+  }
+
+  isFlipping.value = true
+  setTimeout(() => {
+    // 设置翻转状态为false
+    isFlipping.value = false
+    oldNumber.value = _newNumber
+  }, duration.value)
+}
+
+defineExpose({
+  flip,
+})
+</script>
+
+<style lang="less" scoped>
+.flipper-box {
+  position: relative;
+  width: 1.2rem;
+  height: 1.7rem;
+  line-height: 1.7rem;
+  font-size: 1.8rem;
+  color: #fff;
+  box-shadow: 0 0 0.06rem rgba(0, 0, 0, 0.5);
+  text-align: center;
+  margin-right: 0.04rem;
+  &:last-of-type {
+    margin-right: 0;
+  }
+
+  .digital {
+    &:before,
+    &:after {
+      content: attr(data-number);
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: #5d62e9;
+      overflow: hidden;
+    }
+    &:before {
+      top: 0;
+      bottom: 50%;
+      border-radius: 0.08rem;
+      border-bottom: solid 0.02rem #666;
+    }
+    &:after {
+      top: 50%;
+      bottom: 0;
+      border-radius: 0.08rem;
+      line-height: 0;
+    }
+  }
+  /*向下翻*/
+  &.down {
+    .old {
+      &:before {
+        z-index: 3;
+      }
+      &:after {
+        z-index: 1;
+      }
+    }
+    .new {
+      &:before {
+        z-index: 1;
+      }
+      &:after {
+        z-index: 2;
+        transform-origin: 50% 0%;
+        transform: perspective(160px) rotateX(180deg);
+      }
+    }
+
+    &.go {
+      .old {
+        &:before {
+          transform-origin: 50% 100%;
+          animation: oldFlipDown 0.6s ease-in-out both;
+          box-shadow: 0 -0.02rem 0.06rem rgba(255, 255, 255, 0.3);
+          backface-visibility: hidden;
+        }
+      }
+      .new {
+        &:after {
+          animation: newFlipDown 0.6s ease-in-out both;
+        }
+      }
+    }
+  }
+  /*向上翻*/
+  &.up {
+    .old {
+      &:before {
+        z-index: 1;
+      }
+      &:after {
+        z-index: 3;
+      }
+    }
+    .new {
+      &:before {
+        z-index: 2;
+        transform-origin: 50% 100%;
+        transform: perspective(160px) rotateX(-180deg);
+      }
+      &:after {
+        z-index: 1;
+      }
+    }
+
+    &.go {
+      .old {
+        &:after {
+          transform-origin: 50% 0;
+          animation: oldFlipUp 0.6s ease-in-out both;
+          box-shadow: 0 2px 6px rgba(255, 255, 255, 0.3);
+          backface-visibility: hidden;
+        }
+      }
+      .new {
+        &:before {
+          animation: newFlipUp 0.6s ease-in-out both;
+        }
+      }
+    }
+  }
+}
+
+@keyframes oldFlipDown {
+  0% {
+    transform: perspective(160px) rotateX(0deg);
+  }
+
+  100% {
+    transform: perspective(160px) rotateX(-180deg);
+  }
+}
+
+@keyframes newFlipDown {
+  0% {
+    transform: perspective(160px) rotateX(180deg);
+  }
+
+  100% {
+    transform: perspective(160px) rotateX(0deg);
+  }
+}
+
+@keyframes oldFlipUp {
+  0% {
+    transform: perspective(160px) rotateX(0deg);
+  }
+
+  100% {
+    transform: perspective(160px) rotateX(180deg);
+  }
+}
+
+@keyframes newFlipUp {
+  0% {
+    transform: perspective(160px) rotateX(-180deg);
+  }
+
+  100% {
+    transform: perspective(160px) rotateX(0deg);
+  }
+}
+</style>
+```
