@@ -132,8 +132,16 @@ function createExecList(): ExecList {
 ```vue
 <template>
   <div class="flipper-box" :class="[props.flipType, { go: isFlipping }]">
-    <div class="digital old" :data-number="oldNumber"></div>
-    <div class="digital new" :data-number="newNumber"></div>
+    <div class="digital back">
+      <div class="top">{{ oldNumber }}</div>
+      <div class="bottom">{{ oldNumber }}</div>
+    </div>
+    <div class="digital front">
+      <div class="top">{{ newNumber }}</div>
+      <div class="bottom">{{ newNumber }}</div>
+    </div>
+    <!-- <div class="digital old" :data-number="oldNumber"></div> -->
+    <!-- <div class="digital new" :data-number="newNumber"></div> -->
   </div>
 </template>
 
@@ -150,8 +158,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const isFlipping = ref(false);
-const oldNumber = ref(props.number);
-const newNumber = ref(props.number);
+const oldNumber = ref(String(props.number).padStart(2, "0"));
+const newNumber = ref(String(props.number).padStart(2, "0"));
 
 watch(
   () => props.number,
@@ -159,18 +167,19 @@ watch(
     if (isFlipping.value) {
       return false;
     }
-    if (newVal === oldNumber.value) {
+    const newValStr = String(newVal).padStart(2, "0");
+    if (newValStr === oldNumber.value) {
       return false;
     }
 
     isFlipping.value = true;
     oldNumber.value = newNumber.value;
-    newNumber.value = newVal;
+    newNumber.value = newValStr;
 
     setTimeout(() => {
       // 设置翻转状态为false
       isFlipping.value = false;
-      oldNumber.value = newVal;
+      oldNumber.value = newValStr;
     }, props.duration);
   }
 );
@@ -178,16 +187,17 @@ watch(
 
 <style lang="less" scoped>
 @cardPerspective: perspective(24rem);
-@cardWidth: 12rem;
+@cardWidth: 22rem;
 @cardHeight: 16rem;
 @fontSize: 16rem;
 @borderRadius: 1.5rem;
+
 .flipper-box {
   position: relative;
-  width: @cardWidth;
   height: @cardHeight;
   line-height: @cardHeight;
   font-size: @fontSize;
+  width: fit-content;
   color: #fff;
   text-align: center;
   background-color: transparent;
@@ -196,23 +206,29 @@ watch(
     margin-right: 0;
   }
   .digital {
-    &:before,
-    &:after {
-      content: attr(data-number);
+    position: relative;
+    height: 50%;
+    &.front {
+      top: -50%;
+    }
+    .top,
+    .bottom {
       position: absolute;
       left: 0;
       right: 0;
       background: #5d62e9;
       overflow: hidden;
+      text-align: center;
+      padding: 0;
     }
-    &:before {
+    .top {
       top: 0;
-      bottom: 50%;
+      bottom: 100%;
       border-radius: 1.5rem 1.5rem 0 0;
       border-bottom: solid 2px #666;
     }
-    &:after {
-      top: 50%;
+    .bottom {
+      top: 100%;
       bottom: 0;
       border-radius: 0 0 1.5rem 1.5rem;
       line-height: 0;
@@ -220,35 +236,39 @@ watch(
   }
   /*向下翻*/
   &.down {
-    .old {
-      &:before {
+    .back {
+      .top {
         z-index: 3;
+        height: 100%;
       }
-      &:after {
+      .bottom {
         z-index: 1;
+        position: relative;
+        height: 100%;
       }
     }
-    .new {
-      &:before {
+    .front {
+      .top {
         z-index: 1;
+        height: 100%;
       }
-      &:after {
+      .bottom {
         z-index: 2;
+        height: 100%;
         transform-origin: 50% 0%;
       }
     }
-
     &.go {
-      .old {
-        &:before {
+      .back {
+        .top {
           transform-origin: 50% 100%;
           animation: oldFlipDown 0.6s ease-in-out both;
           box-shadow: 0 -2px 32px rgba(0, 0, 0, 0.3);
           backface-visibility: hidden;
         }
       }
-      .new {
-        &:after {
+      .front {
+        .bottom {
           animation: newFlipDown 0.6s ease-in-out both;
         }
       }
@@ -256,35 +276,40 @@ watch(
   }
   /*向上翻*/
   &.up {
-    .old {
-      &:before {
+    .back {
+      .top {
         z-index: 1;
+        height: 100%;
+        position: relative;
       }
-      &:after {
+      .bottom {
         z-index: 3;
+        height: 100%;
       }
     }
-    .new {
-      &:before {
+    .front {
+      .top {
         z-index: 2;
+        height: 100%;
         transform-origin: 50% 100%;
       }
-      &:after {
+      .bottom {
         z-index: 1;
+        height: 100%;
       }
     }
 
     &.go {
-      .old {
-        &:after {
+      .back {
+        .bottom {
           transform-origin: 50% 0;
           animation: oldFlipUp 0.6s ease-in-out both;
           box-shadow: 0 2px 32px rgba(0, 0, 0, 0.3);
           backface-visibility: hidden;
         }
       }
-      .new {
-        &:before {
+      .front {
+        .top {
           animation: newFlipUp 0.6s ease-in-out both;
         }
       }
