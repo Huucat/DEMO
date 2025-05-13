@@ -1,32 +1,47 @@
+type CamelCase<S extends string> = S extends `${infer P}_${infer R}`
+  ? `${P}${Capitalize<R>}`
+  : S;
+
+type CamelCaseKeys<T> = T extends Map<infer K, infer V>
+  ? Map<CamelCaseKeys<K>, CamelCaseKeys<V>>
+  : T extends Set<infer T>
+  ? Set<CamelCaseKeys<T>>
+  : T extends Array<infer U>
+  ? Array<CamelCaseKeys<U>>
+  : T extends object
+  ? {
+      [K in keyof T as CamelCase<Extract<K, string>>]: CamelCaseKeys<T[K]>;
+    }
+  : T;
+
 /**
  * 将下划线命名法转换为驼峰命名法
  * @param obj 任意对象
  * @returns 转换为驼峰命名法后的对象
  */
-export const toCamelCase = <T>(obj: T): T => {
-    // 处理不可变类型
-    if (obj === null || typeof obj !== 'object') return obj
+export const toCamelCase = <T>(obj: T): CamelCaseKeys<T> => {
+  if (obj === null || typeof obj !== "object") return obj as CamelCaseKeys<T>;
 
-    // 处理特殊对象类型
-    if (obj instanceof Date) return obj
-    if (obj instanceof Map)
-        return new Map([...obj].map(([k, v]) => [toCamelCase(k), toCamelCase(v)])) as T
-    if (obj instanceof Set) return new Set([...obj].map(toCamelCase)) as T
+  if (obj instanceof Date) return obj as CamelCaseKeys<T>;
+  if (obj instanceof Map) {
+    return new Map(
+      [...obj].map(([k, v]) => [toCamelCase(k), toCamelCase(v)])
+    ) as CamelCaseKeys<T>;
+  }
+  if (obj instanceof Set) {
+    return new Set([...obj].map(toCamelCase)) as CamelCaseKeys<T>;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(toCamelCase) as CamelCaseKeys<T>;
+  }
 
-    // 处理数组
-    if (Array.isArray(obj)) return obj.map(toCamelCase) as T
+  return Object.entries(obj).reduce((acc, [key, value]) => {
+    const camelKey = key
+      .toLowerCase()
+      .replace(/_+([a-zA-Z0-9])/g, (_, char) => char.toUpperCase())
+      .replace(/^_+/g, "");
 
-    // 处理普通对象
-    return Object.entries(obj).reduce(
-        (acc, [key, value]) => {
-            const camelKey = key
-                .toLowerCase() // 统一处理全大写情况
-                .replace(/_+([a-zA-Z0-9])/g, (_, char) => char.toUpperCase())
-                .replace(/^_+/g, '') // 移除前导下划线
-
-            acc[camelKey] = toCamelCase(value)
-            return acc
-        },
-        {} as Record<string, any>
-    ) as T
-}
+    acc[camelKey] = toCamelCase(value);
+    return acc;
+  }, {} as Record<string, any>) as CamelCaseKeys<T>;
+};
