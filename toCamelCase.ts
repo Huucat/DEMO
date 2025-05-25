@@ -37,10 +37,8 @@ export const toCamelCase = <T>(obj: T): CamelCaseKeys<T> => {
 
   return Object.entries(obj).reduce((acc, [key, value]) => {
     const camelKey = key
-      .toLowerCase()
       .replace(/_+([a-zA-Z0-9])/g, (_, char) => char.toUpperCase())
       .replace(/^_+/g, "");
-
     acc[camelKey] = toCamelCase(value);
     return acc;
   }, {} as Record<string, any>) as CamelCaseKeys<T>;
